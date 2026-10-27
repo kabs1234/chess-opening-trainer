@@ -108,7 +108,7 @@ private fun StatusText(state: PracticeUiState) {
 
 private fun feedbackText(feedback: MoveFeedback, drillName: String): String = when (feedback) {
     MoveFeedback.BookMove -> "✓ Book move"
-    is MoveFeedback.OtherOpening -> "Good move: that's the ${feedback.openingName}. This drill is the $drillName, try again."
+    is MoveFeedback.OtherOpening -> "Good move. It leads to the ${feedback.openingName}, but this drill is the $drillName. Try again."
     MoveFeedback.NotInBook -> "✗ Legal, but not a book move here. Try again or take a hint."
 }
 

@@ -7,14 +7,14 @@ object OpeningCatalog {
         Opening(
             id = "italian",
             name = "Italian Game",
-            description = "Quiet Giuoco Pianissimo: develop, castle, then build slowly with c3 and d3.",
+            description = "Giuoco Pianissimo: develop, castle, then build slowly with c3 and d3.",
             side = PieceColor.WHITE,
             line = "e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d3 d6 O-O O-O",
         ),
         Opening(
             id = "ruy-lopez",
             name = "Ruy Lopez: Closed",
-            description = "Pressure on the e5 defender with Bb5, then the classic retreat to b3.",
+            description = "Pressure on the e5 defender with Bb5, then the retreat to b3.",
             side = PieceColor.WHITE,
             line = "e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3",
         ),
