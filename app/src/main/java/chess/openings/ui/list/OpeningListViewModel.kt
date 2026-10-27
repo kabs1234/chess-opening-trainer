@@ -1,5 +1,8 @@
 package chess.openings.ui.list
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import chess.openings.data.Opening
@@ -29,31 +32,48 @@ enum class OpeningFilter(val label: String) {
     }
 }
 
+data class OpeningCriteria(val filter: OpeningFilter = OpeningFilter.ALL, val searchText: String = "") {
+    fun matches(opening: Opening): Boolean = filter.matches(opening) && matchesSearch(opening)
+
+    private fun matchesSearch(opening: Opening): Boolean =
+        searchText.isBlank() ||
+            opening.name.contains(searchText, ignoreCase = true) ||
+            opening.line.contains(searchText, ignoreCase = true)
+}
+
 data class OpeningListItem(val opening: Opening, val progress: OpeningProgress?)
 
 data class OpeningListUiState(
-    val filter: OpeningFilter,
+    val criteria: OpeningCriteria,
     val items: List<OpeningListItem>,
 )
 
 class OpeningListViewModel(private val repository: OpeningRepository) : ViewModel() {
+    val searchState = TextFieldState()
     private val filter = MutableStateFlow(OpeningFilter.ALL)
+    private val searchText = snapshotFlow { searchState.text.toString().trim() }
 
-    val uiState: StateFlow<OpeningListUiState> = combine(filter, repository.progress, ::buildState)
-        .stateIn(
+    val uiState: StateFlow<OpeningListUiState> =
+        combine(filter, searchText, repository.progress) { selected, text, progress ->
+            buildState(OpeningCriteria(selected, text), progress)
+        }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
-            initialValue = buildState(filter.value, repository.progress.value),
+            initialValue = buildState(OpeningCriteria(), repository.progress.value),
         )
 
     fun onFilterSelected(selected: OpeningFilter) {
         filter.value = selected
     }
 
-    private fun buildState(selected: OpeningFilter, progress: Map<String, OpeningProgress>) = OpeningListUiState(
-        filter = selected,
+    fun onClearSearch() {
+        searchState.clearText()
+    }
+
+    private fun buildState(criteria: OpeningCriteria, progress: Map<String, OpeningProgress>) = OpeningListUiState(
+        criteria = criteria,
         items = repository.getOpenings()
-            .filter(selected::matches)
+            .filter(criteria::matches)
             .map { OpeningListItem(it, progress[it.id]) },
     )
 }
