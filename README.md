@@ -63,6 +63,9 @@ Requires JDK 17+ and Android SDK 37; min SDK 24.
 
 ## Screenshots
 
-| Study | 
-|---|
-| ![Study](screenshots/02-study.png) |
+| Opening list | Study | Practice feedback | Result |
+|---|---|---|---|
+| ![Opening list with saved progress](screenshots/01-list.png) | ![Study screen stepping through the French](screenshots/02-study.png) | ![Practice grading an alternative move](screenshots/03-practice-feedback.png) | ![Result card after finishing the Italian](screenshots/04-result.png) |
+
+Landscape puts the board beside the panel; every screen keeps its state through rotation,
+including a selected piece and an opponent reply that is still pending.
