@@ -7,19 +7,21 @@ move you make is graded against the line.
 ## Features
 
 - Opening list: nine openings (1.e4, 1.d4 and flank). Search by name or by a move in the line
-  ("Najdorf", "Nf3"), and filter by first move. Each card shows the first moves, the side you
-  train as and your practice record.
-- Study: step through the line with « ‹ › » or tap any move in the move list. The last move is
-  highlighted, and the board flips when you train as Black.
-- Practice: tap a piece to see its legal squares, then tap where it goes. Any legal move is
-  allowed, and the app grades it:
-  - The book move gets ✓, and the opponent replies 0.6 s later.
+  ("Najdorf", "Nf3"), and filter by first move. Each card shows the side you train as, the first
+  moves and your best result. In landscape the cards sit in two columns.
+- Study: step through the line with the first / previous / next / last buttons or tap any move in
+  the move list. The last move is highlighted, and the board flips when you train as Black.
+  "Practice this line" stays pinned at the bottom.
+- Practice: tap a piece to see its legal squares (a dot for a move, a ring for a capture), then
+  tap where it goes. Any legal move is allowed, and a feedback banner grades it:
+  - The book move turns the banner green, and the opponent replies 0.6 s later.
   - A move that leads into another opening from the catalog isn't a mistake, but the drill asks
-    for its own line.
-  - Any other move gets ✗, counts as a mistake and turns the square red.
+    for its own line (amber banner).
+  - Any other move counts as a mistake and turns the banner and the square red.
 
   Hint highlights the piece to move. When the line ends, a result card shows your mistakes and
-  the list saves your record.
+  hints, and the list saves your best result.
+- Light and dark themes in the board's green.
 
 ## Architecture
 
@@ -28,7 +30,8 @@ model/        Chess.kt            Piece, PieceColor, ChessPosition (wraps chessl
 data/         Opening.kt          Opening, OpeningProgress
               OpeningCatalog.kt   opening lines in standard notation
               OpeningRepository.kt interface + in-memory implementation
-ui/components ChessBoard, BoardWithPanel, MoveList, OpeningCard, AppTopBar
+ui/components ChessBoard, PieceImage, BoardWithPanel, MoveList, OpeningCard, Pills, AppTopBar
+ui/theme      Theme.kt            light and dark color schemes
 ui/list       OpeningListScreen + OpeningListViewModel
 ui/study      StudyScreen + StudyViewModel
 ui/practice   PracticeScreen + PracticeViewModel
@@ -46,6 +49,8 @@ AppContainer  the single repository instance shared by every screen
   which survives configuration changes, and the reply runs in `viewModelScope`. The selected
   square and the move-list toggle use `rememberSaveable`; `remember` caches the board highlights
   in Practice.
+- Layout: `BoardWithPanel` puts the panel under the board in portrait and next to it in
+  landscape, with an optional footer that stays on screen in both.
 - Navigation: routes `list`, `study/{openingId}` and `practice/{openingId}`. The id reaches the
   ViewModel through `SavedStateHandle`.
 - Rules: [chesslib](https://github.com/bhlangonijr/chesslib) parses the opening lines and
@@ -80,3 +85,15 @@ On Windows use `gradlew.bat` instead of `./gradlew`.
 | Search |
 |---|
 | ![Searching for Nf3 among 1.d4 openings](screenshots/05-search.png) |
+
+| Landscape list | Landscape study |
+|---|---|
+| ![Opening list in two columns](screenshots/06-list-landscape.png) | ![Study screen with the panel beside the board](screenshots/07-study-landscape.png) |
+
+## Credits
+
+- Chess pieces: the "cburnett" set by Colin M.L. Burnett, taken from
+  [Lichess](https://github.com/lichess-org/lila/tree/master/public/piece/cburnett), which
+  distributes it under GPLv2+. The originals on Wikimedia Commons are also offered under GFDL and
+  BSD. Converted to Android vector drawables in `app/src/main/res/drawable/piece_*.xml`.
+- First, last and hint icons: Google's Material icons, Apache 2.0.
