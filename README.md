@@ -6,8 +6,9 @@ move you make is graded against the line.
 
 ## Features
 
-- Opening list: nine openings (1.e4, 1.d4 and flank), filtered by first move. Each card shows the
-  first moves, the side you train as and your practice record.
+- Opening list: nine openings (1.e4, 1.d4 and flank). Search by name or by a move in the line
+  ("Najdorf", "Nf3"), and filter by first move. Each card shows the first moves, the side you
+  train as and your practice record.
 - Study: step through the line with « ‹ › » or tap any move in the move list. The last move is
   highlighted, and the board flips when you train as Black.
 - Practice: tap a piece to see its legal squares, then tap where it goes. Any legal move is
@@ -36,7 +37,9 @@ AppContainer  the single repository instance shared by every screen
 ```
 
 - State: screens hold no game state. Each ViewModel owns a `StateFlow` of an immutable UI state,
-  and the screens collect it with `collectAsStateWithLifecycle`.
+  and the screens collect it with `collectAsStateWithLifecycle`. The search text is a
+  `TextFieldState` held by `OpeningListViewModel`, which combines it with the filter and the saved
+  progress.
 - State hoisting: `ChessBoard` takes the board, orientation, highlights and an `onSquareClick`
   callback, and keeps nothing of its own.
 - Rotation: the move position, mistakes and the opponent's pending reply live in the ViewModel,
@@ -73,3 +76,7 @@ On Windows use `gradlew.bat` instead of `./gradlew`.
 | Opening list | Study | Practice feedback | Result |
 |---|---|---|---|
 | ![Opening list with saved progress](screenshots/01-list.png) | ![Study screen stepping through the French](screenshots/02-study.png) | ![Practice grading an alternative move](screenshots/03-practice-feedback.png) | ![Result card after finishing the Italian](screenshots/04-result.png) |
+
+| Search |
+|---|
+| ![Searching for Nf3 among 1.d4 openings](screenshots/05-search.png) |
