@@ -1,5 +1,6 @@
 package chess.openings.ui.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -9,34 +10,39 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import chess.openings.model.Board
 import chess.openings.model.Piece
-import chess.openings.model.PieceColor
 import chess.openings.model.squareName
 
 private const val BOARD_SIZE = 8
-private const val PIECE_SIZE_RATIO = 0.78f
 private const val LABEL_SIZE_RATIO = 0.2f
-private val LIGHT_SQUARE = Color(0xFFF0D9B5)
-private val DARK_SQUARE = Color(0xFFB58863)
-private val WHITE_PIECE_SHADOW = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 3f)
+private const val MOVE_DOT_RADIUS_RATIO = 0.16f
+private const val CAPTURE_RING_RADIUS_RATIO = 0.46f
+private const val CAPTURE_RING_WIDTH_RATIO = 0.08f
+internal val LIGHT_SQUARE = Color(0xFFEBECD0)
+private val DARK_SQUARE = Color(0xFF739552)
+private val TARGET_MARKER = Color(0x33000000)
+private val BOARD_SHAPE = RoundedCornerShape(8.dp)
+private val BOARD_ELEVATION = 4.dp
 
 enum class SquareHighlight(val color: Color) {
-    LAST_MOVE(Color(0x66F6F669)),
-    TARGET(Color(0x5529A329)),
+    LAST_MOVE(Color(0x80F5F682)),
+    TARGET(Color.Transparent),
     HINT(Color(0x884FA3E0)),
-    SELECTED(Color(0x8829A329)),
+    SELECTED(Color(0xB3F5F682)),
     WRONG(Color(0x99E04F4F)),
 }
 
@@ -55,7 +61,12 @@ fun ChessBoard(
     val ranks = if (isFlipped) (1..BOARD_SIZE).toList() else (BOARD_SIZE downTo 1).toList()
     val files = if (isFlipped) (BOARD_SIZE - 1 downTo 0).toList() else (0 until BOARD_SIZE).toList()
 
-    BoxWithConstraints(modifier.aspectRatio(1f)) {
+    BoxWithConstraints(
+        modifier
+            .aspectRatio(1f)
+            .shadow(BOARD_ELEVATION, BOARD_SHAPE)
+            .clip(BOARD_SHAPE),
+    ) {
         val squareSize = maxWidth / BOARD_SIZE
         Column(Modifier.fillMaxSize()) {
             ranks.forEach { rank ->
@@ -90,9 +101,8 @@ private fun BoardSquare(
     fileLabel: String?,
     modifier: Modifier = Modifier,
 ) {
-    val density = LocalDensity.current
     val labelColor = if (background == LIGHT_SQUARE) DARK_SQUARE else LIGHT_SQUARE
-    val labelSize = with(density) { (squareSize * LABEL_SIZE_RATIO).toSp() }
+    val labelSize = with(LocalDensity.current) { (squareSize * LABEL_SIZE_RATIO).toSp() }
 
     Box(
         modifier = modifier
@@ -101,23 +111,45 @@ private fun BoardSquare(
         contentAlignment = Alignment.Center,
     ) {
         highlight?.let { Box(Modifier.fillMaxSize().background(it.color)) }
+        piece?.let { PieceImage(it, Modifier.fillMaxSize()) }
+        if (highlight == SquareHighlight.TARGET) {
+            if (piece == null) MoveDot() else CaptureRing()
+        }
         rankLabel?.let {
-            Text(it, color = labelColor, fontSize = labelSize, modifier = Modifier.align(Alignment.TopStart).padding(2.dp))
+            Text(
+                it,
+                color = labelColor,
+                fontSize = labelSize,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 3.dp, top = 1.dp),
+            )
         }
         fileLabel?.let {
-            Text(it, color = labelColor, fontSize = labelSize, modifier = Modifier.align(Alignment.BottomEnd).padding(2.dp))
-        }
-        piece?.let {
             Text(
-                text = it.type.symbol,
-                fontSize = with(density) { (squareSize * PIECE_SIZE_RATIO).toSp() },
-                style = pieceStyle(it.color),
+                it,
+                color = labelColor,
+                fontSize = labelSize,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.BottomEnd).padding(end = 3.dp),
             )
         }
     }
 }
 
-private fun pieceStyle(color: PieceColor): TextStyle = when (color) {
-    PieceColor.WHITE -> TextStyle(color = Color.White, shadow = WHITE_PIECE_SHADOW)
-    PieceColor.BLACK -> TextStyle(color = Color.Black)
+@Composable
+private fun MoveDot() {
+    Canvas(Modifier.fillMaxSize()) {
+        drawCircle(color = TARGET_MARKER, radius = size.minDimension * MOVE_DOT_RADIUS_RATIO)
+    }
+}
+
+@Composable
+private fun CaptureRing() {
+    Canvas(Modifier.fillMaxSize()) {
+        drawCircle(
+            color = TARGET_MARKER,
+            radius = size.minDimension * CAPTURE_RING_RADIUS_RATIO,
+            style = Stroke(width = size.minDimension * CAPTURE_RING_WIDTH_RATIO),
+        )
+    }
 }

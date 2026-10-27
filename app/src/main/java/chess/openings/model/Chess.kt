@@ -8,19 +8,11 @@ import com.github.bhlangonijr.chesslib.Square
 import com.github.bhlangonijr.chesslib.move.Move
 import com.github.bhlangonijr.chesslib.move.MoveList
 
-private const val TEXT_PRESENTATION_SELECTOR = "︎"
 private const val FILES = "abcdefgh"
 
 enum class PieceColor { WHITE, BLACK }
 
-enum class PieceType(val symbol: String) {
-    KING("♚"),
-    QUEEN("♛"),
-    ROOK("♜"),
-    BISHOP("♝"),
-    KNIGHT("♞"),
-    PAWN("♟$TEXT_PRESENTATION_SELECTOR"),
-}
+enum class PieceType { KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN }
 
 data class Piece(val type: PieceType, val color: PieceColor)
 

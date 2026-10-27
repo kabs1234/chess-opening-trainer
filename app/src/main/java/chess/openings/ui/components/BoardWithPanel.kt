@@ -19,28 +19,35 @@ import androidx.compose.ui.unit.dp
 fun BoardWithPanel(
     board: @Composable (Modifier) -> Unit,
     modifier: Modifier = Modifier,
+    footer: @Composable () -> Unit = {},
     panel: @Composable ColumnScope.() -> Unit,
 ) {
     BoxWithConstraints(modifier.fillMaxSize()) {
         if (maxWidth > maxHeight) {
             Row(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 board(Modifier.fillMaxHeight())
-                Column(
-                    modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    content = panel,
-                )
+                Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(
+                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        content = panel,
+                    )
+                    footer()
+                }
             }
         } else {
-            Column(
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                board(Modifier.fillMaxWidth())
-                panel()
+            Column(Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    board(Modifier.fillMaxWidth())
+                    panel()
+                }
+                Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) { footer() }
             }
         }
     }

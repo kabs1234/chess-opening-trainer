@@ -2,24 +2,24 @@ package chess.openings.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import chess.openings.data.Opening
 import chess.openings.data.OpeningProgress
-import chess.openings.model.PieceColor
 
 private const val PREVIEW_PLY_COUNT = 6
-
-fun PieceColor.displayName(): String = when (this) {
-    PieceColor.WHITE -> "White"
-    PieceColor.BLACK -> "Black"
-}
 
 @Composable
 fun OpeningCard(
@@ -28,25 +28,71 @@ fun OpeningCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(onClick = onClick, modifier = modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(opening.name, style = MaterialTheme.typography.titleMedium)
-            Text(
-                movePreview(opening.displayMoves, PREVIEW_PLY_COUNT) + " …",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Text("Play as ${opening.side.displayName()}", style = MaterialTheme.typography.labelLarge)
-            Text(progressText(progress), style = MaterialTheme.typography.bodySmall)
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) {
+        Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            SideMarker(opening.side)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(opening.name, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "Play as ${opening.side.displayName()}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    movePreview(opening.displayMoves, PREVIEW_PLY_COUNT) + " …",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                ProgressRow(progress, Modifier.padding(top = 4.dp))
+            }
         }
     }
 }
 
-private fun progressText(progress: OpeningProgress?): String =
-    if (progress == null) {
-        "Not practiced yet"
-    } else {
-        "Practiced ${progress.attempts}× · best: ${mistakeCount(progress.bestMistakes)} · last: ${progress.lastMistakes}"
+@Composable
+private fun ProgressRow(progress: OpeningProgress?, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (progress == null) {
+            InfoPill(
+                text = "Not practiced yet",
+                colors = PillColors(MaterialTheme.colorScheme.surfaceContainerHighest, MaterialTheme.colorScheme.onSurfaceVariant),
+            )
+        } else {
+            BestResultPill(progress.bestMistakes)
+            Text(
+                "Practiced ${progress.attempts}× · last: ${progress.lastMistakes}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
+}
 
-private fun mistakeCount(mistakes: Int): String = if (mistakes == 1) "1 mistake" else "$mistakes mistakes"
+@Composable
+private fun BestResultPill(bestMistakes: Int) {
+    if (bestMistakes == 0) {
+        InfoPill(
+            text = "Best: no mistakes",
+            colors = PillColors(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer),
+            icon = Icons.Filled.Star,
+        )
+    } else {
+        InfoPill(
+            text = "Best: ${mistakeCount(bestMistakes)}",
+            colors = PillColors(MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer),
+        )
+    }
+}
+
+fun mistakeCount(mistakes: Int): String = if (mistakes == 1) "1 mistake" else "$mistakes mistakes"
