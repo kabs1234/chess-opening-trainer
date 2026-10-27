@@ -11,7 +11,12 @@ move you make is graded against the line.
   moves and your best result. In landscape the cards sit in two columns.
 - Study: step through the line with the first / previous / next / last buttons or tap any move in
   the move list. The last move is highlighted, and the board flips when you train as Black.
-  "Practice this line" stays pinned at the bottom.
+  "Practice this opening" stays pinned at the bottom.
+- Lines: the Italian, the Najdorf and the London come with sidelines, so the opponent doesn't
+  always play the main line (for example 3...Nf6 in the Italian, 2.c3 against the Najdorf). Your
+  own moves stay the same, and only the opponent's replies branch. Study has a chip for each line, and
+  Practice picks a line you haven't played yet, then cycles through them. When the opponent
+  leaves the main line, the banner names the sideline.
 - Practice: tap a piece to see its legal squares (a dot for a move, a ring for a capture), then
   tap where it goes. Any legal move is allowed, and a feedback banner grades it:
   - The book move turns the banner green, and the opponent replies 0.6 s later.
@@ -86,9 +91,9 @@ On Windows use `gradlew.bat` instead of `./gradlew`.
 |---|
 | ![Searching for Nf3 among 1.d4 openings](screenshots/05-search.png) |
 
-| Landscape list | Landscape study |
-|---|---|
-| ![Opening list in two columns](screenshots/06-list-landscape.png) | ![Study screen with the panel beside the board](screenshots/07-study-landscape.png) |
+| Landscape list | Landscape study | Sideline |
+|---|---|---|
+| ![Opening list in two columns](screenshots/06-list-landscape.png) | ![Study screen with the panel beside the board](screenshots/07-study-landscape.png) | ![Opponent plays 3...Nf6 in the Italian](screenshots/08-sideline.png) |
 
 ## Credits
 
