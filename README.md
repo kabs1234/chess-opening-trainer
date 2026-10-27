@@ -21,11 +21,12 @@ move you make is graded against the line.
   tap where it goes. Any legal move is allowed, and a feedback banner grades it:
   - The book move turns the banner green, and the opponent replies 0.6 s later.
   - A move that leads into another opening from the catalog isn't a mistake, but the drill asks
-    for its own line (amber banner).
+    for the line you're practicing (amber banner).
   - Any other move counts as a mistake and turns the banner and the square red.
 
   Hint highlights the piece to move. When the line ends, a result card shows your mistakes and
-  hints, and the list saves your best result.
+  hints, and the list saves your best result. Progress is stored on the device and survives
+  closing the app.
 - Light and dark themes in the board's green.
 
 ## Architecture
@@ -34,14 +35,17 @@ move you make is graded against the line.
 model/        Chess.kt            Piece, PieceColor, ChessPosition (wraps chesslib)
 data/         Opening.kt          Opening, OpeningProgress
               OpeningCatalog.kt   opening lines in standard notation
-              OpeningRepository.kt interface + in-memory implementation
+              OpeningRepository.kt the repository interface
+data/local    Room database       PracticeResultEntity, PracticeResultDao, OpeningDatabase,
+                                  RoomOpeningRepository
 ui/components ChessBoard, PieceImage, BoardWithPanel, MoveList, OpeningCard, Pills, AppTopBar
 ui/theme      Theme.kt            light and dark color schemes
 ui/list       OpeningListScreen + OpeningListViewModel
 ui/study      StudyScreen + StudyViewModel
 ui/practice   PracticeScreen + PracticeViewModel
 ui/           AppNavHost, OpeningArguments
-AppContainer  the single repository instance shared by every screen
+AppContainer  the single repository instance shared by every screen, set up by
+              OpeningTrainerApp
 ```
 
 - State: screens hold no game state. Each ViewModel owns a `StateFlow` of an immutable UI state,
@@ -51,7 +55,7 @@ AppContainer  the single repository instance shared by every screen
 - State hoisting: `ChessBoard` takes the board, orientation, highlights and an `onSquareClick`
   callback, and keeps nothing of its own.
 - Rotation: the move position, mistakes and the opponent's pending reply live in the ViewModel,
-  which survives configuration changes, and the reply runs in `viewModelScope`. The selected
+  which survives configuration changes. The reply runs in `viewModelScope`. The selected
   square and the move-list toggle use `rememberSaveable`; `remember` caches the board highlights
   in Practice.
 - Layout: `BoardWithPanel` puts the panel under the board in portrait and next to it in
@@ -61,8 +65,9 @@ AppContainer  the single repository instance shared by every screen
 - Rules: [chesslib](https://github.com/bhlangonijr/chesslib) parses the opening lines and
   generates legal moves. Only `ChessPosition` talks to it, so the UI sees a plain
   `Map<String, Piece>`.
-- Part 2: saving progress to Room means adding a new `OpeningRepository` implementation. Nothing
-  else changes.
+- Persistence (Part 2): every finished practice run is stored as a row in a Room table.
+  `RoomOpeningRepository` folds those rows into each opening's progress and exposes it as the same
+  `StateFlow` the earlier in-memory version had, so no screen or ViewModel had to change.
 
 ## How to run
 
