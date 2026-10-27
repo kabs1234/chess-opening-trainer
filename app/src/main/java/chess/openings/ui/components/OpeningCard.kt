@@ -46,5 +46,7 @@ private fun progressText(progress: OpeningProgress?): String =
     if (progress == null) {
         "Not practiced yet"
     } else {
-        "Practiced ${progress.attempts}× · best: ${progress.bestMistakes} mistakes · last: ${progress.lastMistakes}"
+        "Practiced ${progress.attempts}× · best: ${mistakeCount(progress.bestMistakes)} · last: ${progress.lastMistakes}"
     }
+
+private fun mistakeCount(mistakes: Int): String = if (mistakes == 1) "1 mistake" else "$mistakes mistakes"
