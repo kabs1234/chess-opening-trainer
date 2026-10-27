@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -42,6 +43,7 @@ fun PracticeScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedSquare by rememberSaveable(state.moveIndex) { mutableStateOf<String?>(null) }
+    val highlights = remember(state, selectedSquare) { practiceHighlights(state, selectedSquare) }
 
     fun onSquareClick(square: String) {
         val selected = selectedSquare
@@ -68,7 +70,7 @@ fun PracticeScreen(
                     board = state.position.pieces,
                     modifier = boardModifier,
                     isFlipped = state.opening.side == PieceColor.BLACK,
-                    highlights = practiceHighlights(state, selectedSquare),
+                    highlights = highlights,
                     onSquareClick = ::onSquareClick,
                 )
             },
