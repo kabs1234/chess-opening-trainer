@@ -4,7 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import chess.openings.data.Opening
+import chess.openings.data.OpeningLine
 import chess.openings.data.OpeningRepository
+import chess.openings.data.PracticeResult
+import chess.openings.data.nextLineToPractice
 import chess.openings.model.ChessPosition
 import chess.openings.ui.requireOpening
 import kotlinx.coroutines.Job
@@ -21,10 +24,12 @@ sealed interface MoveFeedback {
     data object BookMove : MoveFeedback
     data class OtherOpening(val openingName: String) : MoveFeedback
     data object NotInBook : MoveFeedback
+    data class OpponentSideline(val lineName: String) : MoveFeedback
 }
 
 data class PracticeUiState(
     val opening: Opening,
+    val line: OpeningLine,
     val moveIndex: Int = 0,
     val mistakes: Int = 0,
     val hintsUsed: Int = 0,
@@ -33,11 +38,12 @@ data class PracticeUiState(
     val hintSquare: String? = null,
     val isOpponentThinking: Boolean = false,
 ) {
-    val position: ChessPosition = ChessPosition.after(opening.moves.take(moveIndex))
-    val lastMove: String? get() = opening.moves.getOrNull(moveIndex - 1)
-    val expectedMove: String? get() = opening.moves.getOrNull(moveIndex)
-    val isFinished: Boolean get() = moveIndex >= opening.moves.size
+    val position: ChessPosition = ChessPosition.after(line.moves.take(moveIndex))
+    val lastMove: String? get() = line.moves.getOrNull(moveIndex - 1)
+    val expectedMove: String? get() = line.moves.getOrNull(moveIndex)
+    val isFinished: Boolean get() = moveIndex >= line.moves.size
     val canPlayerMove: Boolean get() = !isFinished && !isOpponentThinking && opening.isPlayerMove(moveIndex)
+    val sidelineStart: Int? get() = if (line == opening.mainLine) null else line.deviationIndexFrom(opening.mainLine)
 }
 
 class PracticeViewModel(
@@ -45,7 +51,7 @@ class PracticeViewModel(
     private val repository: OpeningRepository,
 ) : ViewModel() {
     private val opening = repository.requireOpening(savedStateHandle)
-    private val _uiState = MutableStateFlow(PracticeUiState(opening))
+    private val _uiState = MutableStateFlow(newRun())
     val uiState: StateFlow<PracticeUiState> = _uiState.asStateFlow()
     private var opponentJob: Job? = null
 
@@ -79,12 +85,16 @@ class PracticeViewModel(
 
     fun restart() {
         opponentJob?.cancel()
-        _uiState.value = PracticeUiState(opening)
+        _uiState.value = newRun()
         playOpponentMoveIfDue()
     }
 
+    private fun newRun(): PracticeUiState =
+        PracticeUiState(opening, opening.nextLineToPractice(repository.progress.value[opening.id]))
+
     private fun rejectOffBookMove(attempt: String, to: String) {
-        val playedMoves = opening.moves.take(_uiState.value.moveIndex) + attempt
+        val state = _uiState.value
+        val playedMoves = state.line.moves.take(state.moveIndex) + attempt
         val otherOpening = repository.getOpenings().firstOrNull { it.id != opening.id && it.continuesWith(playedMoves) }
 
         _uiState.update {
@@ -103,9 +113,12 @@ class PracticeViewModel(
         _uiState.update { it.copy(isOpponentThinking = true) }
         opponentJob = viewModelScope.launch {
             delay(OPPONENT_DELAY_MILLIS)
-            advance(_uiState.value.feedback)
+            advance(opponentFeedback(_uiState.value))
         }
     }
+
+    private fun opponentFeedback(state: PracticeUiState): MoveFeedback? =
+        if (state.moveIndex == state.sidelineStart) MoveFeedback.OpponentSideline(state.line.name) else state.feedback
 
     private fun advance(feedback: MoveFeedback?) {
         _uiState.update {
@@ -121,7 +134,7 @@ class PracticeViewModel(
     }
 
     private fun saveResult() {
-        val mistakes = _uiState.value.mistakes
-        viewModelScope.launch { repository.recordResult(opening.id, mistakes) }
+        val state = _uiState.value
+        viewModelScope.launch { repository.recordResult(PracticeResult(opening.id, state.line.name, state.mistakes)) }
     }
 }

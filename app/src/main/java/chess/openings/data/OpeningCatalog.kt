@@ -10,6 +10,10 @@ object OpeningCatalog {
             description = "Giuoco Pianissimo: develop, castle, then build slowly with c3 and d3.",
             side = PieceColor.WHITE,
             line = "e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d3 d6 O-O O-O",
+            sidelines = listOf(
+                OpeningLine("3...Nf6 Two Knights", "e4 e5 Nf3 Nc6 Bc4 Nf6 d3 Be7 O-O O-O Re1 d6 c3"),
+                OpeningLine("2...d6 Philidor", "e4 e5 Nf3 d6 d4 exd4 Nxd4 Nf6 Nc3 Be7"),
+            ),
         ),
         Opening(
             id = "ruy-lopez",
@@ -24,6 +28,10 @@ object OpeningCatalog {
             description = "Black's sharpest answer to 1.e4; ...a6 keeps the knights off b5.",
             side = PieceColor.BLACK,
             line = "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6",
+            sidelines = listOf(
+                OpeningLine("2.c3 Alapin", "e4 c5 c3 Nf6 e5 Nd5 d4 cxd4 Nf3 Nc6"),
+                OpeningLine("3.Bb5+ Moscow", "e4 c5 Nf3 d6 Bb5+ Bd7 Bxd7+ Qxd7 O-O Nc6 c3 Nf6"),
+            ),
         ),
         Opening(
             id = "french-advance",
@@ -59,6 +67,10 @@ object OpeningCatalog {
             description = "A setup more than a line: Bf4, e3, c3 and Nbd2 against almost anything.",
             side = PieceColor.WHITE,
             line = "d4 d5 Bf4 Nf6 e3 e6 Nf3 c5 c3 Nc6 Nbd2 Bd6",
+            sidelines = listOf(
+                OpeningLine("2...c5", "d4 d5 Bf4 c5 e3 Nc6 c3 Qb6 Qb3 c4 Qc2"),
+                OpeningLine("1...Nf6 King's Indian setup", "d4 Nf6 Bf4 g6 e3 Bg7 Nf3 O-O Be2 d6 h3"),
+            ),
         ),
         Opening(
             id = "english",

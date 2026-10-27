@@ -2,6 +2,8 @@ package chess.openings.ui.study
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +19,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -39,6 +43,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import chess.openings.AppContainer
 import chess.openings.R
+import chess.openings.data.OpeningLine
 import chess.openings.model.PieceColor
 import chess.openings.ui.components.AppTopBar
 import chess.openings.ui.components.BoardWithPanel
@@ -74,15 +79,18 @@ fun StudyScreen(
                     contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
                 ) {
                     Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
-                    Text("Practice this line", modifier = Modifier.padding(start = ButtonDefaults.IconSpacing))
+                    Text("Practice this opening",modifier = Modifier.padding(start = ButtonDefaults.IconSpacing))
                 }
             },
         ) {
             NavigationButtons(state = state, viewModel = viewModel)
+            if (state.opening.lines.size > 1) {
+                LinePicker(lines = state.opening.lines, selectedIndex = state.lineIndex, onSelect = viewModel::selectLine)
+            }
             MovesHeader(isExpanded = isMoveListVisible, onToggle = { isMoveListVisible = !isMoveListVisible })
             if (isMoveListVisible) {
                 MoveList(
-                    moves = state.opening.displayMoves,
+                    moves = state.line.displayMoves,
                     highlightedIndex = state.moveIndex - 1,
                     onMoveClick = { index -> viewModel.goTo(index + 1) },
                 )
@@ -115,7 +123,7 @@ private fun NavigationButtons(state: StudyUiState, viewModel: StudyViewModel) {
         StepButton(painterResource(R.drawable.ic_first_move), "First move", state.canGoBack, viewModel::goToStart)
         StepButton(rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowLeft), "Previous move", state.canGoBack, viewModel::goBack)
         Text(
-            "Move ${state.moveIndex} / ${state.opening.moves.size}",
+            "Move ${state.moveIndex} / ${state.line.moves.size}",
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(1f),
@@ -129,6 +137,24 @@ private fun NavigationButtons(state: StudyUiState, viewModel: StudyViewModel) {
 private fun StepButton(icon: Painter, description: String, isEnabled: Boolean, onClick: () -> Unit) {
     FilledTonalIconButton(onClick = onClick, enabled = isEnabled) {
         Icon(icon, contentDescription = description)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LinePicker(lines: List<OpeningLine>, selectedIndex: Int, onSelect: (Int) -> Unit) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        lines.forEachIndexed { index, line ->
+            FilterChip(
+                selected = index == selectedIndex,
+                onClick = { onSelect(index) },
+                label = { Text(line.name) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
+            )
+        }
     }
 }
 

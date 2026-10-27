@@ -39,7 +39,7 @@ fun OpeningCard(
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(opening.name, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Play as ${opening.side.displayName()}",
+                    sideAndLinesText(opening),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -93,6 +93,11 @@ private fun BestResultPill(bestMistakes: Int) {
             colors = PillColors(MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer),
         )
     }
+}
+
+private fun sideAndLinesText(opening: Opening): String {
+    val side = "Play as ${opening.side.displayName()}"
+    return if (opening.lines.size > 1) "$side · ${opening.lines.size} lines" else side
 }
 
 fun mistakeCount(mistakes: Int): String = if (mistakes == 1) "1 mistake" else "$mistakes mistakes"

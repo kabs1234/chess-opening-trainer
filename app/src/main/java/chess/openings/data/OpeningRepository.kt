@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+data class PracticeResult(val openingId: String, val lineName: String, val mistakes: Int)
+
 interface OpeningRepository {
     val progress: StateFlow<Map<String, OpeningProgress>>
 
@@ -12,7 +14,7 @@ interface OpeningRepository {
 
     fun getOpening(id: String): Opening?
 
-    suspend fun recordResult(openingId: String, mistakes: Int)
+    suspend fun recordResult(result: PracticeResult)
 }
 
 class InMemoryOpeningRepository(
@@ -25,10 +27,11 @@ class InMemoryOpeningRepository(
 
     override fun getOpening(id: String): Opening? = openings.find { it.id == id }
 
-    override suspend fun recordResult(openingId: String, mistakes: Int) {
+    override suspend fun recordResult(result: PracticeResult) {
         _progress.update { all ->
-            val updated = all[openingId]?.withResult(mistakes) ?: OpeningProgress.firstResult(mistakes)
-            all + (openingId to updated)
+            val updated = all[result.openingId]?.withResult(result.lineName, result.mistakes)
+                ?: OpeningProgress.firstResult(result.lineName, result.mistakes)
+            all + (result.openingId to updated)
         }
     }
 }

@@ -38,7 +38,7 @@ data class OpeningCriteria(val filter: OpeningFilter = OpeningFilter.ALL, val se
     private fun matchesSearch(opening: Opening): Boolean =
         searchText.isBlank() ||
             opening.name.contains(searchText, ignoreCase = true) ||
-            opening.line.contains(searchText, ignoreCase = true)
+            opening.lines.any { it.san.contains(searchText, ignoreCase = true) }
 }
 
 data class OpeningListItem(val opening: Opening, val progress: OpeningProgress?)

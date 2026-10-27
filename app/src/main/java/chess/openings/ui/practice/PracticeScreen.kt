@@ -108,7 +108,7 @@ fun PracticeScreen(
             }
             if (state.moveIndex > 0) {
                 MoveList(
-                    moves = state.opening.displayMoves.take(state.moveIndex),
+                    moves = state.line.displayMoves.take(state.moveIndex),
                     highlightedIndex = state.moveIndex - 1,
                 )
             }
@@ -158,6 +158,7 @@ private fun bannerStyle(feedback: MoveFeedback?): BannerStyle {
         MoveFeedback.BookMove -> BannerStyle(Icons.Filled.CheckCircle, colors.primaryContainer, colors.onPrimaryContainer)
         is MoveFeedback.OtherOpening -> BannerStyle(Icons.Filled.Info, colors.tertiaryContainer, colors.onTertiaryContainer)
         MoveFeedback.NotInBook -> BannerStyle(Icons.Filled.Warning, colors.errorContainer, colors.onErrorContainer)
+        is MoveFeedback.OpponentSideline -> BannerStyle(Icons.Filled.Info, colors.secondaryContainer, colors.onSecondaryContainer)
     }
 }
 
@@ -166,6 +167,7 @@ private fun feedbackText(feedback: MoveFeedback?, drillName: String): String = w
     MoveFeedback.BookMove -> "Book move."
     is MoveFeedback.OtherOpening -> "Good move. It leads to the ${feedback.openingName}, but this drill is the $drillName. Try again."
     MoveFeedback.NotInBook -> "Legal, but not a book move here. Try again or take a hint."
+    is MoveFeedback.OpponentSideline -> "Your opponent went for the ${feedback.lineName}. You prepared for this one too."
 }
 
 @Composable
@@ -217,6 +219,7 @@ private fun ResultCard(state: PracticeUiState, onAgain: () -> Unit, onBackToList
                 )
                 Text("Line complete!", style = MaterialTheme.typography.headlineSmall)
             }
+            Text(state.line.name, style = MaterialTheme.typography.titleMedium)
             Text(resultText(state.mistakes), style = MaterialTheme.typography.bodyLarge)
             Text("Hints used: ${state.hintsUsed}", style = MaterialTheme.typography.labelLarge)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
